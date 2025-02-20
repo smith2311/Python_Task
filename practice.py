@@ -1,8 +1,6 @@
-# Writing the first Python program
-print("Hello, World!")  # This prints "Hello, World!" to the console
+print("Hello, World!")
 
 # This is a single-line comment
-
 """
 This is a multi-line comment 
 spanning multiple lines.
