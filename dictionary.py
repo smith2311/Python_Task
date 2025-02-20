@@ -53,7 +53,7 @@ print(" \n 2) The average marks of the students present in dictionary are: ",avg
 highest_scoring_student=max(total_marks,key=per_subject_average.get)
 print("\n 3) The highest score of the students present in dictionary is",highest_scoring_student,"with",total_marks[highest_scoring_student],"marks")
 
-#---------------------------------------Subject-wise Highest Marks: Create a new dictionary where the key is the subject, and the value is the highest marks obtained in that subject.----------------------------------
+#----------------------Subject-wise Highest Marks: Create a new dictionary where the key is the subject, and the value is the highest marks obtained in that subject.----------------------------------
 
 highest_scorer_in_subject={}
 for key,value in marks.items():
@@ -63,7 +63,7 @@ print("\n 4) Highest marks in each subject: ")
 for subject,score in highest_scorer_in_subject.items():
     print(f"\t{subject}:{score}")
 
-#--------------------------------------- Sort Students by Total Marks in Descending Order: Sort and display the students based on their total marks from highest to lowest. output will be dict.----------------------------------------------
+#--------------- Sort Students by Total Marks in Descending Order: Sort and display the students based on their total marks from highest to lowest. output will be dict.----------------------------------------------
 def get_total_marks(students):
     return students[1]
 
@@ -72,36 +72,3 @@ sorted_students=sorted(total_marks.items(),key=get_total_marks,reverse=True)
 print("\n 5) Students sorted by total marks: ")
 for name,marks in sorted_students:
     print(f"\t {name}:{marks}")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
