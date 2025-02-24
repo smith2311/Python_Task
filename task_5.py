@@ -15,7 +15,6 @@ movie_ratings = {
 # Top 3 Movies: [('The Dark Knight', 9.0), ('Parasite', 8.9), ('Inception', 8.8)]
 # Average Rating: 8.74"""
 
-
 movie_ratings = {
     "Inception": 8.8,
     "Interstellar": 8.6,
