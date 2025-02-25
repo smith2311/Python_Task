@@ -37,17 +37,12 @@ def complaints_percentage_ratio(complaints):
     total_complaints=sum(complaints.values())
     for comp, count in complaints.items():
         percentage=(count/total_complaints)*100
-        print(f"\t{comp} : {percentage:.3f}%.")
+        print(f"\t{comp} : {percentage:.2f}%.")
 
 
 common_complaints(complaints)
 
-print("\n2) The percentage of all complaints complaints is:")
+print(f"\n2) The percentage of all complaints complaints is:")
 complaints_percentage_ratio(complaints)
-
-
-
-
-
 
 

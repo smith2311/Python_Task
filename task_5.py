@@ -45,7 +45,3 @@ def avg_movie_ratings(movie_ratings):
 highest_rated_movie(movie_ratings)
 top3_movies(movie_ratings)
 avg_movie_ratings(movie_ratings)
-
-
-
-
