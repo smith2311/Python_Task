@@ -1,6 +1,9 @@
+from datetime import datetime, timedelta
+
 class Library:
     def __init__(self):
         self.books = {}
+        self.borrowed_books = {}
 
     def add_book(self, title, author, quantity):
         if title in self.books:
@@ -49,6 +52,48 @@ class Library:
         except KeyError as e:
             print(e)
 
+    def borrow_book(self, user_name, title):
+        try:
+            if title in self.books and self.books[title][1] > 0:
+                if user_name not in self.borrowed_books:
+                    self.borrowed_books[user_name] = {}
+
+                if len(self.borrowed_books[user_name]) >= 2:
+                    print("You can only borrow a maximum of 2 books at a time.")
+                    return
+
+                borrow_date = datetime.now()
+                due_date = borrow_date + timedelta(days=14)
+                self.borrowed_books[user_name][title] = (borrow_date.strftime('%Y-%m-%d'), due_date.strftime('%Y-%m-%d'))
+                self.books[title] = (self.books[title][0], self.books[title][1] - 1)
+                print(f'Book "{title}" borrowed successfully by {user_name}! Due date: {due_date.strftime("%Y-%m-%d")}')
+            else:
+                raise KeyError("Book not available for borrowing.")
+        except KeyError as e:
+            print(e)
+
+    def return_book(self, user_name, title):
+        try:
+            if user_name in self.borrowed_books and title in self.borrowed_books[user_name]:
+                del self.borrowed_books[user_name][title]
+                if not self.borrowed_books[user_name]:
+                    del self.borrowed_books[user_name]
+
+                self.books[title] = (self.books[title][0], self.books[title][1] + 1)
+                print(f'Book "{title}" returned successfully by {user_name}!')
+            else:
+                raise KeyError("Book not borrowed or incorrect user.")
+        except KeyError as e:
+            print(e)
+
+    def view_borrowed_books(self, user_name):
+        if user_name in self.borrowed_books:
+            print(f'Books borrowed by {user_name}:')
+            for title, (borrow_date, due_date) in self.borrowed_books[user_name].items():
+                print(f'Title: {title}, Borrowed on: {borrow_date}, Due on: {due_date}')
+        else:
+            print(f'No books borrowed by {user_name}.')
+
 library = Library()
 
 while True:
@@ -58,7 +103,10 @@ while True:
     print("3. Update Book")
     print("4. Display Books")
     print("5. Search Book")
-    print("6. Exit")
+    print("6. Borrow Book")
+    print("7. Return Book")
+    print("8. View Borrowed Books")
+    print("9. Exit")
 
     choice = input("Enter your choice: ")
 
@@ -82,7 +130,30 @@ while True:
         title = input("Enter book title to search: ")
         library.search_book(title)
     elif choice == "6":
-        print("See You Again!! Exiting the program...")
+        user_name = input("Enter your name: ")
+        title = input("Enter book title to borrow: ")
+        library.borrow_book(user_name, title)
+    elif choice == "7":
+        user_name = input("Enter your name: ")
+        title = input("Enter book title to return: ")
+        library.return_book(user_name, title)
+    elif choice == "8":
+        user_name = input("Enter your name: ")
+        library.view_borrowed_books(user_name)
+    elif choice == "9":
+        print("Exiting the program...")
         break
     else:
-        print("Invalid choice! Please enter a number between 1 and 6.")
+        print("Invalid choice! Please enter a number between 1 and 9.")
+
+
+
+
+
+
+
+
+
+
+
+
