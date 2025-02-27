@@ -4,6 +4,9 @@ class Library:
     def __init__(self):
         self.books = {}
         self.borrowed_books = {}
+        self.reserved_books = {}
+        self.borrowing_history = {}
+        self.penalties = {}
 
     def add_book(self, title, author, quantity):
         if title in self.books:
@@ -13,86 +16,100 @@ class Library:
         print(f'Book "{title}" added successfully!')
 
     def remove_book(self, title):
-        try:
-            if title in self.books:
-                del self.books[title]
-                print(f'Book "{title}" removed successfully!')
-            else:
-                raise KeyError("Book not found in the library.")
-        except KeyError as e:
-            print(e)
+        if title in self.books:
+            del self.books[title]
+            print(f'Book "{title}" removed successfully!')
+        else:
+            print("Error: Book not found in the library.")
 
     def update_book(self, title, author=None, quantity=None):
-        try:
-            if title in self.books:
-                current_author, current_quantity = self.books[title]
-                self.books[title] = (author if author else current_author,
-                                     quantity if quantity is not None else current_quantity)
-                print(f'Book "{title}" updated successfully!')
-            else:
-                raise KeyError("Book not found in the library.")
-        except KeyError as e:
-            print(e)
+        if title in self.books:
+            current_author, current_quantity = self.books[title]
+            self.books[title] = (author if author else current_author,
+                                 quantity if quantity is not None else current_quantity)
+            print(f'Book "{title}" updated successfully!')
+        else:
+            print("Error: Book not found in the library.")
 
     def display_books(self):
         if not self.books:
             print("No books available in the library.")
-        else:
-            print("Available books:")
-            for title, (author, quantity) in self.books.items():
-                print(f'Title: {title}, Author: {author}, Quantity: {quantity}')
+            return
+        print("\nAvailable Books:")
+        for title, (author, quantity) in self.books.items():
+            print(f'Title: {title}, Author: {author}, Quantity: {quantity}')
 
     def search_book(self, title):
-        try:
-            if title in self.books:
-                author, quantity = self.books[title]
-                print(f'Book Found - Title: {title}, Author: {author}, Quantity: {quantity}')
-            else:
-                raise KeyError("Book not found in the library.")
-        except KeyError as e:
-            print(e)
+        if title in self.books:
+            author, quantity = self.books[title]
+            print(f'Book Found - Title: {title}, Author: {author}, Quantity: {quantity}')
+        else:
+            print("Error: Book not found in the library.")
 
     def borrow_book(self, user_name, title):
-        try:
-            if title in self.books and self.books[title][1] > 0:
-                if user_name not in self.borrowed_books:
-                    self.borrowed_books[user_name] = {}
+        if user_name not in self.borrowed_books:
+            self.borrowed_books[user_name] = {}
 
-                if len(self.borrowed_books[user_name]) >= 2:
-                    print("You can only borrow a maximum of 2 books at a time.")
-                    return
+        if len(self.borrowed_books[user_name]) >= 3:
+            print("You can only borrow a maximum of 3 books at a time.")
+            return
 
-                borrow_date = datetime.now()
-                due_date = borrow_date + timedelta(days=14)
-                self.borrowed_books[user_name][title] = (borrow_date.strftime('%Y-%m-%d'), due_date.strftime('%Y-%m-%d'))
-                self.books[title] = (self.books[title][0], self.books[title][1] - 1)
-                print(f'Book "{title}" borrowed successfully by {user_name}! Due date: {due_date.strftime("%Y-%m-%d")}')
-            else:
-                raise KeyError("Book not available for borrowing.")
-        except KeyError as e:
-            print(e)
+        if title in self.books and self.books[title][1] > 0:
+            borrow_date = datetime.now()
+            due_date = borrow_date + timedelta(days=14)
+            self.borrowed_books[user_name][title] = {'borrow_date': borrow_date, 'due_date': due_date}
+            self.books[title] = (self.books[title][0], self.books[title][1] - 1)
+            self.borrowing_history.setdefault(user_name, []).append(title)
+            print(f'Book "{title}" borrowed successfully by {user_name}! Due date: {due_date.strftime("%Y-%m-%d")}')
+        else:
+            print("Book not available for borrowing.")
+            self.reserve_book(user_name, title)
 
     def return_book(self, user_name, title):
-        try:
-            if user_name in self.borrowed_books and title in self.borrowed_books[user_name]:
-                del self.borrowed_books[user_name][title]
-                if not self.borrowed_books[user_name]:
-                    del self.borrowed_books[user_name]
+        if user_name in self.borrowed_books and title in self.borrowed_books[user_name]:
+            borrow_info = self.borrowed_books[user_name].pop(title)
+            return_date = datetime.now()
 
-                self.books[title] = (self.books[title][0], self.books[title][1] + 1)
-                print(f'Book "{title}" returned successfully by {user_name}!')
-            else:
-                raise KeyError("Book not borrowed or incorrect user.")
-        except KeyError as e:
-            print(e)
+            if return_date > borrow_info['due_date']:
+                penalty_days = (return_date - borrow_info['due_date']).days
+                self.penalties[user_name] = self.penalties.get(user_name, 0) + penalty_days * 5
+                print(f'Late return! Penalty applied: {penalty_days * 5} units.')
+
+            if not self.borrowed_books[user_name]:
+                del self.borrowed_books[user_name]
+
+            self.books[title] = (self.books[title][0], self.books[title][1] + 1)
+            print(f'Book "{title}" returned successfully by {user_name}!')
+            self.notify_reserved_users(title)
+        else:
+            print("Book not borrowed or incorrect user.")
+
+    def reserve_book(self, user_name, title):
+        if title not in self.reserved_books:
+            self.reserved_books[title] = []
+        if user_name not in self.reserved_books[title]:
+            self.reserved_books[title].append(user_name)
+            print(f'Book "{title}" is out of stock. {user_name} has been added to the reservation queue.')
+
+    def notify_reserved_users(self, title):
+        if title in self.reserved_books and self.reserved_books[title]:
+            next_user = self.reserved_books[title].pop(0)
+            print(f'Notification: {next_user}, the book "{title}" is now available for borrowing!')
 
     def view_borrowed_books(self, user_name):
         if user_name in self.borrowed_books:
             print(f'Books borrowed by {user_name}:')
-            for title, (borrow_date, due_date) in self.borrowed_books[user_name].items():
-                print(f'Title: {title}, Borrowed on: {borrow_date}, Due on: {due_date}')
+            for title, details in self.borrowed_books[user_name].items():
+                print(f'Title: {title}, Borrowed on: {details["borrow_date"].strftime("%Y-%m-%d")}, Due on: {details["due_date"].strftime("%Y-%m-%d")}')
         else:
             print(f'No books borrowed by {user_name}.')
+
+    def view_borrowing_history(self, user_name):
+        if user_name in self.borrowing_history:
+            print(f'Borrowing history of {user_name}: {self.borrowing_history[user_name]}')
+        else:
+            print("No borrowing history found.")
+
 
 library = Library()
 
@@ -145,15 +162,3 @@ while True:
         break
     else:
         print("Invalid choice! Please enter a number between 1 and 9.")
-
-
-
-
-
-
-
-
-
-
-
-
